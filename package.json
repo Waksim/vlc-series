@@ -1,0 +1,9 @@
+{
+  "name": "sofa-remote",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local browser remote for VLC on macOS",
+  "license": "MIT",
+  "scripts": {"test:ui": "node tests/test_ui.cjs"},
+  "devDependencies": {"playwright": "1.62.1"}
+}

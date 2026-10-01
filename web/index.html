@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#101216"><meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Диванный пульт</title><link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="manifest" href="/manifest.webmanifest"><link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+<svg class="symbols" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="m9 5 11 7-11 7Z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14" stroke-width="4.5"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M8 4 3 8l5 4M3 8h10a7 7 0 1 1-6.1 10.4"/></symbol>
+  <symbol id="i-forward" viewBox="0 0 24 24"><path d="m16 4 5 4-5 4m5-4H11a7 7 0 1 0 6.1 10.4"/></symbol>
+  <symbol id="i-volume" viewBox="0 0 24 24"><path d="M11 4 6 8H3v8h3l5 4Zm5 4a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/></symbol>
+  <symbol id="i-mute" viewBox="0 0 24 24"><path d="M11 4 6 8H3v8h3l5 4Zm5 5 6 6m0-6-6 6"/></symbol>
+  <symbol id="i-expand" viewBox="0 0 24 24"><path d="M9 3H3v6m12-6h6v6M3 15v6h6m12-6v6h-6"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2"/></symbol>
+  <symbol id="i-next" viewBox="0 0 24 24"><path d="m5 5 10 7-10 7Zm14 0v14"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></symbol>
+</defs></svg>
+<main class="shell">
+  <header class="topbar"><a class="brand" href="/" aria-label="Диванный пульт"><img src="/icon.svg" width="30" height="30" alt=""><span>диванный пульт</span></a><span class="local-tag">VLC</span></header>
+  <section id="gate" class="gate" aria-labelledby="gate-title">
+    <div class="gate-art" aria-hidden="true"><span class="orbit orbit-one"></span><span class="orbit orbit-two"></span><span class="art-moon">☾</span><span class="art-popcorn">🍿</span><span class="art-spark">✦</span></div>
+    <p class="eyebrow">МЕСТО В ПЕРВОМ РЯДУ</p>
+    <h1 id="gate-title">Устраивайся<br><span>поудобнее.</span></h1>
+    <p class="gate-copy">Три картинки твоего пароля —<br>и весь вечер под контролем.</p>
+    <div id="pattern-slots" class="pattern-slots" aria-live="polite" aria-label="Выбранные картинки"><span>·</span><span>·</span><span>·</span></div>
+    <div id="pattern-grid" class="pattern-grid">
+      <button data-picture="dragon" aria-label="Дракон">🐉</button><button data-picture="moon" aria-label="Луна">🌙</button><button data-picture="popcorn" aria-label="Попкорн">🍿</button>
+      <button data-picture="cat" aria-label="Кот">🐈</button><button data-picture="sofa" aria-label="Диван">🛋️</button><button data-picture="crown" aria-label="Корона">👑</button>
+    </div>
+    <p id="gate-message" class="gate-message" role="status">Нажми три картинки по порядку</p>
+    <button id="clear-pattern" class="text-button">Начать заново</button>
+    <p class="gate-note"><svg><use href="#i-lock"/></svg>Этот телефон запомнит вход</p>
+  </section>
+  <section id="remote" class="remote" hidden aria-label="Управление VLC">
+    <div class="remote-heading"><h1>Диванный режим</h1><button id="lock" class="icon-button" aria-label="Заблокировать пульт" title="Заблокировать"><svg><use href="#i-lock"/></svg></button></div>
+    <div id="connection" class="connection" role="status"><i></i><span>Подключаемся к VLC</span></div>
+    <div id="offline-note" class="offline-note" hidden>Нет связи с VLC. Проверь, что плеер открыт, а телефон подключён к домашнему Wi-Fi. Пульт подключится сам.</div>
+    <nav class="view-tabs" aria-label="Разделы пульта"><button id="tab-player" class="selected" aria-current="page">Пульт</button><button id="tab-library">Серии <span id="library-count"></span></button></nav>
+    <div id="player-view">
+    <article class="now-playing">
+      <div class="now-top"><span class="eyebrow">СЕЙЧАС НА ЭКРАНЕ</span><span id="play-state" class="state-pill">Пауза</span></div>
+      <div class="title-block"><span id="episode" class="episode" hidden></span><h2 id="media-title">Твой вечер начинается здесь</h2><p id="media-detail">Выбери фильм в VLC</p></div>
+      <div class="timeline"><progress id="position" class="playback-progress" max="1" value="0" aria-label="Прогресс воспроизведения"></progress><div class="time-labels"><span id="elapsed">0:00</span><span id="remaining">−0:00</span></div></div>
+    </article>
+    <div class="transport">
+      <button id="back" class="seek-button" aria-label="Назад на 5 секунд"><svg><use href="#i-back"/></svg><span>5 сек</span></button>
+      <button id="toggle" class="play-button" aria-label="Продолжить"><svg><use id="toggle-icon" href="#i-play"/></svg></button>
+      <button id="forward" class="seek-button" aria-label="Вперёд на 5 секунд"><svg><use href="#i-forward"/></svg><span>5 сек</span></button>
+    </div>
+    <p id="transport-hint" class="transport-hint">Никуда не спешим</p>
+    <section class="volume-card" aria-label="Громкость">
+      <div class="volume-heading"><button id="mute" class="mute-button" aria-label="Выключить звук VLC"><svg><use id="volume-icon" href="#i-volume"/></svg><span>Звук VLC</span></button><output id="volume-value" for="volume">100<span>%</span></output></div>
+      <div class="volume-controls"><button id="quieter" class="volume-step" aria-label="VLC тише на 5 процентов">−</button><div class="volume-scale"><label class="sr-only" for="volume">Громкость VLC, от 0 до 200 процентов</label><input id="volume" type="range" min="0" max="200" step="1" value="100" aria-describedby="gain-note"><div class="volume-ticks" aria-hidden="true"><span>0</span><span>100</span><span>200%</span></div></div><button id="louder" class="volume-step" aria-label="VLC громче на 5 процентов">+</button></div>
+      <div class="gain-row"><span id="gain-label">Без усиления</span><button id="unity-volume" class="unity-button">Вернуть 100%</button></div>
+      <p id="gain-note" class="audio-note">Выше 100% VLC усиливает звук — на громких сценах возможны искажения.</p>
+      <div id="system-volume-section" class="system-volume-section" hidden>
+        <div class="volume-heading"><button id="system-mute" class="mute-button" aria-label="Выключить звук macOS"><svg><use id="system-volume-icon" href="#i-volume"/></svg><span>Громкость macOS</span></button><output id="system-volume-value" for="system-volume">—</output></div>
+        <div class="volume-controls"><button id="system-quieter" class="volume-step" aria-label="macOS тише на 5 процентов">−</button><label class="sr-only" for="system-volume">Громкость macOS</label><input id="system-volume" type="range" min="0" max="100" step="1" value="0"><button id="system-louder" class="volume-step" aria-label="macOS громче на 5 процентов">+</button></div>
+      </div>
+      <p id="audio-device" class="audio-device"></p>
+      <p id="audio-advice" class="audio-note">Проверяем доступные регуляторы звука…</p>
+    </section>
+    <details class="extras"><summary>Ещё немного магии<svg><use href="#i-chevron"/></svg></summary><div class="extra-content">
+      <div class="extra-buttons"><button id="fullscreen"><svg><use href="#i-expand"/></svg>Полный экран</button><button id="next"><svg><use href="#i-next"/></svg>Следующее</button></div>
+      <label for="audio">Звуковая дорожка</label><select id="audio" disabled><option>Нет дорожек</option></select>
+      <label for="subtitles">Субтитры</label><select id="subtitles" disabled><option>Нет субтитров</option></select>
+      <div class="autoplay-options">
+        <label class="check-option"><span>Пропускать заставку</span><input id="skip-intro" type="checkbox" checked></label>
+        <label class="check-option"><span>Следующая серия на титрах</span><input id="auto-next" type="checkbox" checked></label>
+        <p id="markers-note" class="bookmark-note">Автопропуск работает для размеченных серий.</p>
+      </div>
+    </div></details>
+    </div>
+    <section id="library-view" class="library-view" aria-label="Сезоны и серии" hidden>
+      <label class="series-label" for="series-select">Сериал</label><select id="series-select" class="series-select" aria-label="Выбор сериала"></select>
+      <div class="library-heading"><p class="eyebrow">ТВОЙ СЕРИАЛ</p><h2 id="library-title">Собираем серии…</h2></div>
+      <button id="continue-episode" class="continue-card" hidden><span class="continue-icon"><svg><use href="#i-play"/></svg></span><span><span class="eyebrow">ПРОДОЛЖИТЬ ПРОСМОТР</span><strong id="continue-title"></strong><span id="continue-detail"></span></span><span class="continue-arrow">↗</span></button>
+      <p class="season-label">Сезоны</p><div id="season-tabs" class="season-tabs" aria-label="Выбор сезона"></div>
+      <div class="season-heading"><h3 id="season-title"></h3><span id="season-count"></span></div>
+      <div class="season-progress"><div id="season-fill"></div></div>
+      <p id="season-summary" class="season-summary"></p>
+      <div id="episode-list" class="episode-list"></div>
+      <p id="library-empty" class="library-empty" hidden>Пока нет доступных серий в папке сериала.</p>
+      <p class="progress-note"><span></span>Цветом отмечено то, что ты посмотрел. Перемотанные участки остаются пустыми.</p>
+      <p class="bookmark-note">Заставки и титры показаны серым и не мешают завершению серии. Место для продолжения сохраняется после 30 секунд просмотра. Случайный заход его не собьёт.</p>
+    </section>
+    <footer>Хорошего вечера <span>✦</span></footer>
+  </section>
+</main>
+<div id="toast" class="toast" role="status" hidden></div>
+</body></html>
