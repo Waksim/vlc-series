@@ -1,0 +1,6 @@
+interface:
+  display_name: "VLC Series"
+  short_description: "Добавить сериалы и разметить заставки и титры"
+  default_prompt: "Используй $vlc-series: добавь сериалы из указанной папки, сначала подготовь пульт для просмотра, затем разметь заставки и титры."
+policy:
+  allow_implicit_invocation: false

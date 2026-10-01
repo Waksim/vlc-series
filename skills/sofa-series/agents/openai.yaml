@@ -1,6 +1,0 @@
-interface:
-  display_name: "Сериалы для Sofa Remote"
-  short_description: "Добавить сериалы и разметить заставки и титры"
-  default_prompt: "Используй $sofa-series: добавь сериалы из указанной папки, сначала подготовь пульт для просмотра, затем разметь заставки и титры."
-policy:
-  allow_implicit_invocation: false

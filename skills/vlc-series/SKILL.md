@@ -1,5 +1,5 @@
 ---
-name: sofa-series
+name: vlc-series
 description: "По явному вызову: добавить сериалы в Sofa Remote и разметить заставки и титры."
 ---
 

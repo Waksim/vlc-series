@@ -22,7 +22,7 @@ def locate():
     for folder in candidates:
         if (folder/'sofa.py').is_file() and (folder/'library.lua').is_file():
             return folder/'sofa.py'
-    raise SystemExit('Не найден репозиторий Sofa Remote. Клонируйте https://github.com/Waksim/sofa-remote и задайте SOFA_REMOTE_REPO или выполните его установку.')
+    raise SystemExit('Не найден репозиторий Sofa Remote. Клонируйте https://github.com/Waksim/vlc-series и задайте SOFA_REMOTE_REPO или выполните его установку.')
 
 
 if __name__=='__main__':
