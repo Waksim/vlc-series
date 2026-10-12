@@ -25,7 +25,7 @@ function showGate(message){clearTimeout(pollTimer);$('gate').hidden=false;$('rem
 function showRemote(){$('gate').hidden=true;$('remote').hidden=false}
 function connected(value){online=value;$('connection').classList.toggle('offline',!value);$('connection').querySelector('span').textContent=value?'На связи с MacBook':'Ищем твой VLC';$('offline-note').hidden=value;updateDisabled()}
 function updateDisabled(){
-  for(const id of ['toggle','mute','quieter','louder','volume','unity-volume','fullscreen','next','skip-intro','auto-next'])$(id).disabled=!online;
+  for(const id of ['toggle','mute','quieter','louder','volume','unity-volume','fullscreen','next','skip-intro','auto-next','resume-playback'])$(id).disabled=!online;
   for(const id of ['system-quieter','system-louder','system-volume'])$(id).disabled=!online||!state?.systemAudio?.controllable;
   $('system-mute').disabled=!online||!state?.systemAudio?.muteControllable;
   for(const id of ['back','forward'])$(id).disabled=!online||!state?.hasMedia||state.length<=0;
@@ -86,7 +86,7 @@ function render(s){
   renderAudio(s);
   options('audio',s.audio,s.audioId);options('subtitles',s.subtitles,s.subtitleId);updateDisabled();
   if(libraryData&&view==='library')renderLibrary();
-  if(!libraryData||(view==='library'&&Date.now()-libraryUpdated>4000))loadLibrary();
+  if(!libraryData||Date.now()-libraryUpdated>4000)loadLibrary();
 }
 function expired(){token='';storage.set('');showGate('Пора снова выбрать три картинки')}
 function failure(e){if(e.code===401){expired();return}connected(false)}
@@ -128,6 +128,19 @@ function openEpisode(id,fromStart=false){
   const e=libraryData?.episodes.find(e=>e.id===id);if(!e||!online)return;
   act('play_episode',{id,fromStart},episodeLabel(e));switchView('player');libraryUpdated=0;
 }
+function renderContinue(){
+  const data=libraryData,resume=data?.episodes.find(e=>e.id===data.continueId);
+  for(const id of ['resume-playback','continue-episode']){
+    $(id).hidden=!resume;
+    if(resume)$(id).dataset.episode=resume.id;else delete $(id).dataset.episode;
+  }
+  if(!resume)return;
+  const detail=resume.progress.complete?'Посмотрена · можно пересмотреть':`С места ${time(resume.progress.resume)}`;
+  $('continue-title').textContent=episodeLabel(resume);$('continue-detail').textContent=detail;
+  $('resume-title').textContent=`${data.title} · ${episodeLabel(resume)}`;
+  $('resume-detail').textContent=detail;
+  $('resume-playback').setAttribute('aria-label',`Продолжить просмотр. ${data.title}. ${episodeLabel(resume)}. ${detail}`);
+}
 function renderLibrary(){
   const data=libraryData;if(!data)return;
   const picker=$('series-select'),seriesKey=JSON.stringify(data.series);
@@ -136,13 +149,7 @@ function renderLibrary(){
   $('library-title').textContent=data.title;$('library-empty').hidden=!!data.episodes.length;
   const current=data.episodes.find(e=>e.id===state?.episodeId);
   if(!data.seasons.includes(selectedSeason))selectedSeason=current?.season||data.seasons[0];
-  const resume=data.episodes.find(e=>e.id===data.continueId);
-  $('continue-episode').hidden=!resume;
-  if(resume){
-    $('continue-title').textContent=episodeLabel(resume);
-    $('continue-detail').textContent=resume.progress.complete?'Посмотрена · можно пересмотреть':`С места ${time(resume.progress.resume)}`;
-    $('continue-episode').dataset.episode=resume.id;
-  }
+  renderContinue();
   const seasonsKey=data.seasons.join(',');
   if($('season-tabs').dataset.key!==seasonsKey){
     $('season-tabs').replaceChildren(...data.seasons.map(season=>{const b=node('button','season-tab',String(season));b.dataset.season=season;b.setAttribute('aria-label',`Сезон ${season}`);return b}));
@@ -183,11 +190,12 @@ function renderLibrary(){
   }
   updateDisabled();
 }
-$('series-select').onchange=e=>{selectedSeries=e.target.value;selectedSeason=null;libraryData=null;$('episode-list').replaceChildren();$('episode-list').dataset.key='';$('continue-episode').hidden=true;loadLibrary(true)};
+$('series-select').onchange=e=>{selectedSeries=e.target.value;selectedSeason=null;libraryData=null;renderContinue();$('episode-list').replaceChildren();$('episode-list').dataset.key='';loadLibrary(true)};
 $('tab-player').onclick=()=>switchView('player');$('tab-library').onclick=()=>switchView('library');
 $('season-tabs').onclick=e=>{const button=e.target.closest('[data-season]');if(button){selectedSeason=Number(button.dataset.season);renderLibrary()}};
 $('episode-list').onclick=e=>{const button=e.target.closest('button[data-episode]');if(button)openEpisode(button.dataset.episode,button.dataset.restart==='true')};
 $('continue-episode').onclick=()=>openEpisode($('continue-episode').dataset.episode);
+$('resume-playback').onclick=()=>openEpisode($('resume-playback').dataset.episode);
 $('pattern-grid').addEventListener('click',async e=>{
   const button=e.target.closest('button[data-picture]');if(!button||loginBusy)return;
   vibrate();pattern.push(button.dataset.picture);slots();gateMessage('Нажми три картинки по порядку');

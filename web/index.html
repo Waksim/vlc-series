@@ -44,6 +44,7 @@
     <div id="offline-note" class="offline-note" hidden>Нет связи с VLC. Проверь, что плеер открыт, а телефон подключён к домашнему Wi-Fi. Пульт подключится сам.</div>
     <nav class="view-tabs" aria-label="Разделы пульта"><button id="tab-player" class="selected" aria-current="page">Пульт</button><button id="tab-library">Серии <span id="library-count"></span></button></nav>
     <div id="player-view">
+    <button id="resume-playback" class="continue-card" hidden><span class="continue-icon"><svg><use href="#i-play"/></svg></span><span class="continue-copy"><strong>Продолжить просмотр</strong><span id="resume-title" class="continue-detail"></span><span id="resume-detail" class="continue-detail"></span></span><span class="continue-arrow" aria-hidden="true">↗</span></button>
     <article class="now-playing">
       <div class="now-top"><span class="eyebrow">СЕЙЧАС НА ЭКРАНЕ</span><span id="play-state" class="state-pill">Пауза</span></div>
       <div class="title-block"><span id="episode" class="episode" hidden></span><h2 id="media-title">Твой вечер начинается здесь</h2><p id="media-detail">Выбери фильм в VLC</p></div>
@@ -81,7 +82,7 @@
     <section id="library-view" class="library-view" aria-label="Сезоны и серии" hidden>
       <label class="series-label" for="series-select">Сериал</label><select id="series-select" class="series-select" aria-label="Выбор сериала"></select>
       <div class="library-heading"><p class="eyebrow">ТВОЙ СЕРИАЛ</p><h2 id="library-title">Собираем серии…</h2></div>
-      <button id="continue-episode" class="continue-card" hidden><span class="continue-icon"><svg><use href="#i-play"/></svg></span><span><span class="eyebrow">ПРОДОЛЖИТЬ ПРОСМОТР</span><strong id="continue-title"></strong><span id="continue-detail"></span></span><span class="continue-arrow">↗</span></button>
+      <button id="continue-episode" class="continue-card" hidden><span class="continue-icon"><svg><use href="#i-play"/></svg></span><span class="continue-copy"><span class="eyebrow">ПРОДОЛЖИТЬ ПРОСМОТР</span><strong id="continue-title"></strong><span id="continue-detail" class="continue-detail"></span></span><span class="continue-arrow">↗</span></button>
       <p class="season-label">Сезоны</p><div id="season-tabs" class="season-tabs" aria-label="Выбор сезона"></div>
       <div class="season-heading"><h3 id="season-title"></h3><span id="season-count"></span></div>
       <div class="season-progress"><div id="season-fill"></div></div>
