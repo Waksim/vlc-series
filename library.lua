@@ -116,14 +116,16 @@ function M.current(lib)
     local ok, path = pcall(vlc.strings.make_path, item:uri())
     return ok and lib.byPath[path] or nil
 end
-function M.next(lib, id)
+local function adjacent(lib, id, offset)
     for i, entry in ipairs(lib.episodes) do
         if entry.id == id then
-            local nextEntry = lib.episodes[i+1]
+            local nextEntry = lib.episodes[i+offset]
             return nextEntry and nextEntry.seriesId == entry.seriesId and nextEntry or nil
         end
     end
 end
+function M.next(lib, id) return adjacent(lib, id, 1) end
+function M.previous(lib, id) return adjacent(lib, id, -1) end
 function M.unchanged(entry)
     local stat = entry and vlc.net.stat(entry.path)
     return stat and stat.type == "file" and stat.size == entry.size and stat.modification_time == entry.mtime

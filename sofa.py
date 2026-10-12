@@ -19,12 +19,12 @@ import urllib.error
 import urllib.request
 import uuid
 
-VERSION = '1.0.0'
+VERSION = '1.0.1'
 SOURCE = Path(__file__).resolve().parent
 DEFAULT_PROFILE = Path.home() / 'Library/Application Support/org.videolan.vlc/sofa-remote'
 EXTENSIONS = {'.mkv', '.mp4', '.avi', '.mov', '.m4v', '.webm', '.ts'}
 PICTURES = {'dragon': '🐉', 'moon': '🌙', 'popcorn': '🍿', 'cat': '🐈', 'sofa': '🛋️', 'crown': '👑'}
-MODULES = ('library.lua', 'progress.lua', 'markers.lua', 'audio.lua', 'tracker.lua', 'sofa.lua')
+MODULES = ('library.lua', 'progress.lua', 'markers.lua', 'audio.lua', 'navigation.lua', 'tracker.lua', 'sofa.lua')
 
 
 def read_json(path, default=None):

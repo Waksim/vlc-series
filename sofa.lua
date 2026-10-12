@@ -5,6 +5,7 @@ local root = assert(config.root, "Sofa Remote root is missing")
 local library = dofile(root .. "/library.lua")
 local Progress = dofile(root .. "/progress.lua")
 local Markers = dofile(root .. "/markers.lua")
+local navigation = dofile(root .. "/navigation.lua").new(library, Progress)
 local settings = assert(library.read(root .. "/settings.json", json))
 local catalog, scanned, timings, markerScan, registryKey = nil, 0, {}, 0, nil
 local function refreshcatalog()
@@ -110,7 +111,7 @@ local function status()
         audioId = getvar(input, "audio-es", -1), subtitleId = getvar(input, "spu-es", -1),
         hasMedia = input ~= nil,
         episodeId = current and current.id, seriesId = current and current.seriesId,
-        libraryTitle = current and current.seriesTitle or catalog.title, version = "1.0.0", apiVersion = 2,
+        libraryTitle = current and current.seriesTitle or catalog.title, version = "1.0.1", apiVersion = 2,
         playback = Markers.preferences(root, library, json),
         marked = current ~= nil and timings[current.id] ~= nil,
     }
@@ -146,15 +147,11 @@ local function togglemute()
     return true
 end
 local recentCommands, recentCount = {}, 0
-local function playepisode(id, fromStart)
+local function playepisode(id, fromStart, previous)
     local entry = refreshcatalog().byId[id]
     if not entry or not library.unchanged(entry) then return false, "episode_missing" end
-    local marker = timings[id]
-    local progress = Progress.summary(library.history(root, json).episodes[id], entry.duration, marker and marker.excluded)
-    local start = not fromStart and not progress.complete and progress.resume or 0
     -- Per-item start time cannot leak into another episode, unlike a global VLC flag.
-    vlc.playlist.add({{path=vlc.strings.make_uri(entry.path), name=entry.filename,
-        options={"start-time=" .. tostring(start)}}})
+    vlc.playlist.add({navigation.item(entry, library.history(root, json), timings, fromStart, previous)})
     return true
 end
 local function command(p)
@@ -220,7 +217,14 @@ local function command(p)
             if nextEntry then return playepisode(nextEntry.id, false) end
             return false, "last_episode"
         else vlc.playlist.next() end
-    elseif p.action == "previous" then vlc.playlist.prev()
+    elseif p.action == "previous" then
+        local lib = refreshcatalog()
+        local current = library.current(lib)
+        if current then
+            local previousEntry = library.previous(lib, current.id)
+            if previousEntry then return playepisode(previousEntry.id, false, true) end
+            return false, "first_episode"
+        else vlc.playlist.prev() end
     elseif p.action == "audio" or p.action == "subtitle" then
         if not input or not number(p.value) then return false, "bad_value" end
         local key = p.action == "audio" and "audio-es" or "spu-es"
@@ -285,7 +289,7 @@ local function route(method, path, headers, body)
     if not allowedhost(host) then return jsonresponse(403, {error = "host"}) end
     if headers.origin and headers.origin ~= "http://" .. host then return jsonresponse(403, {error = "origin"}) end
     if path == "/health" and method == "GET" then
-        return jsonresponse(200, {service="sofa-remote", version="1.0.0", apiVersion=2})
+        return jsonresponse(200, {service="sofa-remote", version="1.0.1", apiVersion=2})
     end
     if path == "/api" then
         if method ~= "POST" then return jsonresponse(405, {error = "post_required"}) end

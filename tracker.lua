@@ -4,6 +4,7 @@ local root = assert(config.root)
 local library = dofile(root .. "/library.lua")
 local Progress = dofile(root .. "/progress.lua")
 local Markers = dofile(root .. "/markers.lua")
+local navigation = dofile(root .. "/navigation.lua").new(library, Progress)
 local settings = assert(library.read(root .. "/settings.json", json))
 local catalogSettings, registryKey = library.registry(root, settings, json)
 local catalog = library.scan(catalogSettings, library.read(root .. "/library-cache.json", json))
@@ -12,6 +13,7 @@ local player = Markers.new_player()
 local timings, preferences = {}, {}
 local lastSave, lastScan, lastSettings = 0, 0, 0
 local startGeneration, awaitingStart, startDeadline
+local queueGeneration, queueCatalog
 local function atomic(path, raw)
     local f = assert(io.open(path .. ".tmp", "w"))
     assert(f:write(raw)); assert(f:flush()); f:close()
@@ -49,6 +51,12 @@ local function sample()
     local previous = engine.previous
     engine:observe(s)
     if s.state ~= "playing" or not previous or previous.id ~= s.id or clock - lastSave >= 2 then save() end
+    if queueGeneration ~= s.generation or queueCatalog ~= catalog then
+        if navigation.sync(catalog, entry, engine.data, timings) then
+            queueGeneration, queueCatalog = s.generation, catalog
+        end
+    end
+    if vlc.playlist.current() ~= s.generation then return end
     -- VLC briefly reports time=0 before applying an item's saved start-time.
     -- An opening at zero must not overwrite that pending resume seek.
     if startGeneration ~= s.generation then
@@ -56,6 +64,14 @@ local function sample()
         local ok, requested = pcall(vlc.var.get, input, "start-time")
         awaitingStart = ok and type(requested) == "number" and requested > 0 and requested or nil
         startDeadline = clock + 5
+        local marker = timings[entry.id]
+        local meta = item:metas()
+        if meta["sofa-resume-mode"] == "previous" and marker and marker.credits and
+            awaitingStart and awaitingStart >= marker.credits.nextAt then
+            -- Back to the saved credits must not immediately bounce forward again.
+            player:plan({id=s.id, generation=s.generation, state="paused"}, nil, preferences)
+            player:applied({kind="next"})
+        end
     end
     if awaitingStart then
         if s.position >= awaitingStart - 0.5 or clock >= startDeadline then awaitingStart = nil
@@ -78,11 +94,7 @@ local function sample()
             duration=s.duration, rate=s.rate, clock=s.clock, timestamp=s.timestamp}
     elseif nextEntry and library.unchanged(nextEntry) then
         save()
-        local nextMarker = timings[nextEntry.id]
-        local progress = Progress.summary(engine.data.episodes[nextEntry.id], nextEntry.duration, nextMarker and nextMarker.excluded)
-        local start = not progress.complete and progress.resume or 0
-        vlc.playlist.add({{path=vlc.strings.make_uri(nextEntry.path), name=nextEntry.filename,
-            options={"start-time=" .. tostring(start)}}})
+        vlc.playlist.add({navigation.item(nextEntry, engine.data, timings, false, false)})
         player:applied(action)
     end
 end

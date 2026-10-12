@@ -42,10 +42,20 @@ check(#lib.series==2 and #lib.episodes==3,'independent catalogs combined')
 check(lib.byId['one:s01e01'] and lib.byId['two:s01e01'],'same episode numbers do not collide')
 check(Library.next(lib,'one:s01e01').id=='one:s01e02','next stays in same series')
 check(Library.next(lib,'one:s01e02')==nil,'next never jumps into another series')
+check(Library.previous(lib,'one:s01e02').id=='one:s01e01','previous stays in the same series')
+check(Library.previous(lib,'two:s01e01')==nil,'previous never jumps into another series')
 check(#Library.scan({libraries={{id='dup',root='/duplicate',title='Duplicate'}}},{}).episodes==0,'ambiguous duplicate is not playable')
 local old=Library.scan({libraryRoot='/one',libraryTitle='Legacy'},{});check(old.byId.s01e01 and not old.byId['legacy:s01e01'],'legacy progress keys preserved')
 local season,episode=Library.parse('Серия 07.mp4',2);check(season==2 and episode==7,'Russian episode pattern')
 season,episode=Library.parse('Show.S02.E03.mkv');check(season==2 and episode==3,'separator in S/E pattern')
+local Navigation=dofile(base .. '/navigation.lua')
+vlc.strings={make_uri=function(path)return 'file://'..path end}
+local navigation=Navigation.new(Library,P)
+local watched={episodes={['one:s01e01']={ranges={{0,100}},resume=72,duration=100}}}
+local episode={id='one:s01e01',path='/one/Show.S01E01.mp4',filename='Show.S01E01.mp4',duration=100}
+check(navigation.item(episode,watched,{},false,false).options[1]=='start-time=0','completed next episode starts from the beginning')
+check(navigation.item(episode,watched,{},false,true).options[1]=='start-time=72','previous resumes even a completed episode')
+check(navigation.item(episode,watched,{},true,true).options[1]=='start-time=0','explicit start over always wins')
 vlc=realVlc
 local result='PASS '..checks..' Lua assertions'
 if config and config.result then local f=assert(io.open(config.result,'w'));f:write(result);f:close()end
